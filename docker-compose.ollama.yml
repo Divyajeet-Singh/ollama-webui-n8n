@@ -1,0 +1,42 @@
+
+
+volumes:
+  ollama_storage:
+
+networks:
+  default:
+    name: ai-stack-network
+    external: true
+
+x-ollama: &service-ollama
+  image: ollama/ollama:latest
+  container_name: ollama-gpu
+  restart: unless-stopped
+  ports:
+    - 11434:11434
+  volumes:
+    - ollama_storage:/root/.ollama
+  environment:
+    - NVIDIA_VISIBLE_DEVICES=all
+  runtime: nvidia
+
+x-init-ollama: &init-ollama
+  image: ollama/ollama:latest
+  container_name: ollama-pull-llama-gpu
+  volumes:
+    - ollama_storage:/root/.ollama
+  entrypoint: /bin/sh
+  environment:
+    - OLLAMA_HOST=ollama-gpu:11434
+  command:
+    - "-c"
+    - "sleep 3; ollama pull llama3.2; ollama pull gemma3:4b; ollama pull phi4-mini; ollama pull qwen3:0.6b"
+
+services:
+  ollama-gpu:
+    <<: *service-ollama
+
+  ollama-pull-llama-gpu:
+    <<: *init-ollama
+    depends_on:
+      - ollama-gpu

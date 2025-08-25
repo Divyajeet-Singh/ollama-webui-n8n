@@ -1,0 +1,8 @@
+
+
+volumes:
+  postgres_storage:
+  n8n_storage:
+  ollama_storage:
+  qdrant_storage:
+  open_webui_storage:
